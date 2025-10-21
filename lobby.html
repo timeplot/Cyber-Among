@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Among Us Cyber - Lobby</title>
+    <style>
+        /* Matrix Cyber Theme */
+        :root {
+            --matrix-green: #00ff41;
+            --matrix-dark: #0a0a0a;
+            --matrix-darker: #000;
+            --matrix-glow: #00ff41;
+            --danger: #ff0040;
+            --success: #00ff88;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--matrix-darker);
+            color: var(--matrix-green);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Matrix Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .digit {
+            position: absolute;
+            color: var(--matrix-green);
+            font-size: 14px;
+            text-shadow: 0 0 5px var(--matrix-glow);
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 2px solid var(--matrix-green);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: var(--matrix-green);
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px var(--matrix-glow);
+        }
+
+        .subtitle {
+            color: #88ff88;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .lobby-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .join-section, .player-list-section, .rules-section {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid var(--matrix-green);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .join-section h2, .player-list-section h2 {
+            color: var(--matrix-green);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--matrix-glow);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--matrix-green);
+            border-radius: 5px;
+            color: var(--matrix-green);
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--matrix-glow);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 2px solid var(--matrix-green);
+            border-radius: 5px;
+            color: var(--matrix-green);
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px var(--matrix-glow);
+        }
+
+        button:hover:not(:disabled) {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 20px var(--matrix-glow);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .player-list {
+            min-height: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 5px;
+        }
+
+        .player-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid var(--matrix-green);
+        }
+
+        .player-name {
+            flex: 1;
+            color: var(--matrix-green);
+            font-weight: bold;
+        }
+
+        .player-role {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .player-role.impostor {
+            background: var(--danger);
+            color: white;
+        }
+
+        .player-role.crewmate {
+            background: var(--success);
+            color: black;
+        }
+
+        .rules-section {
+            grid-column: 1 / -1;
+        }
+
+        .rules-section h3 {
+            color: var(--matrix-green);
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px var(--matrix-glow);
+        }
+
+        .rules-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rules-section li {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0, 255, 65, 0.05);
+            border-left: 3px solid var(--matrix-green);
+        }
+
+        .waiting {
+            text-align: center;
+            color: #88ff88;
+            font-style: italic;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Background -->
+    <div class="matrix-bg" id="matrixBg"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎮 AMONG US CYBER</h1>
+            <div class="subtitle">Join and Start Immediately!</div>
+        </div>
+
+        <div class="lobby-container">
+            <!-- Player Join Section -->
+            <div class="join-section">
+                <h2>Join Game</h2>
+                <input type="text" id="playerName" placeholder="Enter your name" maxlength="15">
+                <button onclick="joinLobby()">JOIN LOBBY</button>
+            </div>
+
+            <!-- Player List -->
+            <div class="player-list-section">
+                <h2>Players in Lobby</h2>
+                <div class="player-list" id="playerList">
+                    <div class="waiting">Waiting for players...</div>
+                </div>
+                
+                <button id="startBtn" onclick="startGame()">START GAME</button>
+            </div>
+
+            <!-- Game Rules -->
+            <div class="rules-section">
+                <h3>🚀 GAME RULES:</h3>
+                <ul>
+                    <li>🎯 <strong>Crewmates</strong> - Complete tasks before Impostor kills everyone</li>
+                    <li>😈 <strong>Impostor</strong> - Sabotage and kill Crewmates without getting caught</li>
+                    <li>⏰ <strong>5 Minute Timer</strong> - Complete tasks before time runs out</li>
+                    <li>⚠️ <strong>3 Sabotages</strong> - Impostor needs 3 successful sabotages to kill</li>
+                    <li>❄️ <strong>30s Kill Cooldown</strong> - Impostor must wait between kills</li>
+                    <li>🚨 <strong>90s Meetings</strong> - Extended discussion time</li>
+                    <li>💬 <strong>Text Chat</strong> - Communicate with other players</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        // Create Matrix background
+        function createMatrixEffect() {
+            const container = document.getElementById('matrixBg');
+            const digits = '0101010101';
+            const count = 50;
+            
+            for (let i = 0; i < count; i++) {
+                const digit = document.createElement('div');
+                digit.className = 'digit';
+                digit.textContent = digits[Math.floor(Math.random() * digits.length)];
+                digit.style.left = Math.random() * 100 + 'vw';
+                digit.style.animationDuration = (2 + Math.random() * 4) + 's';
+                digit.style.animationDelay = Math.random() * 3 + 's';
+                digit.style.opacity = Math.random() * 0.3 + 0.1;
+                container.appendChild(digit);
+            }
+        }
+
+        let playerName = '';
+
+        function joinLobby() {
+            const nameInput = document.getElementById('playerName');
+            playerName = nameInput.value.trim();
+            
+            if (playerName.length < 2) {
+                alert('Please enter a name (2-15 characters)');
+                return;
+            }
+
+            socket.emit('join-lobby', { name: playerName });
+            nameInput.disabled = true;
+            document.querySelector('.join-section button').disabled = true;
+        }
+
+        function startGame() {
+            socket.emit('start-game');
+        }
+
+        // Socket event listeners
+        socket.on('player-list-update', (players) => {
+            const playerList = document.getElementById('playerList');
+            const startBtn = document.getElementById('startBtn');
+
+            if (players.length === 0) {
+                playerList.innerHTML = '<div class="waiting">Waiting for players...</div>';
+            } else {
+                playerList.innerHTML = players.map(player => `
+                    <div class="player-item">
+                        <span class="player-color" style="background-color: ${player.color}"></span>
+                        <span class="player-name">${player.name}</span>
+                        ${player.role ? `<span class="player-role ${player.role}">${player.role}</span>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Always enable start button - no player count requirement
+            startBtn.disabled = false;
+        });
+
+        socket.on('game-started', (data) => {
+            if (data.role === 'impostor') {
+                window.location.href = '/impostor';
+            } else {
+                window.location.href = '/crewmate';
+            }
+        });
+
+        // Initialize matrix effect
+        createMatrixEffect();
+    </script>
+</body>
+</html>
